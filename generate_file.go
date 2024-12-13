@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"go/format"
 	"os"
-	"path"
 	"text/template"
 )
 
@@ -14,8 +13,11 @@ type FileRequest struct {
 	// full path of the file to generate
 	OutputPath string
 
-	// Template name to use
-	TemplateName string
+	// Template path
+	TemplatePath string
+
+	// Template bytes - has priority over TemplatePath
+	TemplateBytes []byte
 
 	// Data will be passed to the template
 	Data any
@@ -33,20 +35,21 @@ func GenerateFile(ctx context.Context, req FileRequest) ([]byte, error) {
 		funcs[n] = f
 	}
 
-	// read the template
-	templatesPath := resolveTemplatesPath()
-	templateFileName := fmt.Sprintf("%s.tmpl", req.TemplateName)
-	templateFilePath := path.Join(templatesPath, templateFileName)
-	data, err := os.ReadFile(templateFilePath)
-	if err != nil {
-		fmt.Println("reading error", err)
-		return nil, err
+	// load the template
+	templateData := req.TemplateBytes
+	if templateData == nil {
+		var err error
+		templateData, err = os.ReadFile(req.TemplatePath)
+		if err != nil {
+			fmt.Println(" error reading template", err)
+			return nil, err
+		}
 	}
 
 	// instantiate the template
-	t, err := template.New("template").Funcs(funcs).Parse(string(data))
+	t, err := template.New("template").Funcs(funcs).Parse(string(templateData))
 	if err != nil {
-		fmt.Printf("Template Error: %v\n ", req.TemplateName)
+		fmt.Printf("Template Error: %v\n ", req.TemplatePath)
 		fmt.Printf("Template Error: %v\n ", err)
 		return nil, fmt.Errorf("error with provided template: %w", err)
 	}
@@ -72,16 +75,9 @@ func GenerateFile(ctx context.Context, req FileRequest) ([]byte, error) {
 	}
 
 	// write the output
-	rootDir := CurrentPath()
-	finalOutput := path.Join(rootDir, req.OutputPath)
-	err = Write(finalOutput, output)
+	err = Write(req.OutputPath, output)
 	if err != nil {
 		return nil, err
 	}
 	return output, nil
-}
-
-func resolveTemplatesPath() string {
-	rootDir := CurrentPath()
-	return path.Join(rootDir, "templates")
 }

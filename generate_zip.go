@@ -22,8 +22,7 @@ type ZipRequest struct {
 
 func GenerateZip(ctx context.Context, req ZipRequest) error {
 	// creating new zip file
-	rootDir := CurrentPath()
-	zipFile := path.Join(rootDir, req.OutputPath, req.Identifier)
+	zipFile := path.Join(req.OutputPath, req.Identifier)
 	archive, err := os.Create(fmt.Sprintf("%s.zip", zipFile))
 	if err != nil {
 		return err
@@ -63,7 +62,7 @@ func GenerateZip(ctx context.Context, req ZipRequest) error {
 		return nil
 	}
 
-	finalOutput := path.Join(rootDir, req.OutputPath, req.Identifier)
+	finalOutput := path.Join(req.OutputPath, req.Identifier)
 	err = filepath.Walk(finalOutput, walker)
 	if err != nil {
 		return err

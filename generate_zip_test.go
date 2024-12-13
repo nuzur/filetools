@@ -12,8 +12,8 @@ import (
 
 func TestGenerateZip(t *testing.T) {
 	output, err := GenerateFile(context.Background(), FileRequest{
-		OutputPath:   "/ziptest/123/test.txt",
-		TemplateName: "test",
+		OutputPath:   "ziptest/123/test.txt",
+		TemplatePath: "templates/test.tmpl",
 		Data: struct {
 			Name string
 		}{Name: "nuzur"},
@@ -23,8 +23,7 @@ func TestGenerateZip(t *testing.T) {
 
 	assert.NotNil(t, output)
 	assert.NoError(t, err)
-	rootDir := CurrentPath()
-	finalOutput := path.Join(rootDir, "ziptest", "123", "test.txt")
+	finalOutput := path.Join("ziptest", "123", "test.txt")
 	if _, err := os.Stat(finalOutput); errors.Is(err, os.ErrNotExist) {
 		assert.NoError(t, err)
 	}
@@ -34,10 +33,10 @@ func TestGenerateZip(t *testing.T) {
 		Identifier: "123",
 	})
 	assert.NoError(t, err)
-	zipFile := path.Join(rootDir, "ziptest", "123.zip")
+	zipFile := path.Join("ziptest", "123.zip")
 	if _, err := os.Stat(zipFile); errors.Is(err, os.ErrNotExist) {
 		assert.NoError(t, err)
 	}
 
-	os.RemoveAll(path.Join(rootDir, "ziptest"))
+	os.RemoveAll(path.Join("ziptest"))
 }

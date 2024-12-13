@@ -12,8 +12,8 @@ import (
 
 func TestGenerateFile(t *testing.T) {
 	output, err := GenerateFile(context.Background(), FileRequest{
-		OutputPath:   "/gentest/test.txt",
-		TemplateName: "test",
+		OutputPath:   "gentest/test.txt",
+		TemplatePath: "templates/test.tmpl",
 		Data: struct {
 			Name string
 		}{Name: "nuzur"},
@@ -23,11 +23,10 @@ func TestGenerateFile(t *testing.T) {
 
 	assert.NotNil(t, output)
 	assert.NoError(t, err)
-	rootDir := CurrentPath()
-	finalOutput := path.Join(rootDir, "gentest", "test.txt")
+	finalOutput := path.Join("gentest", "test.txt")
 	if _, err := os.Stat(finalOutput); errors.Is(err, os.ErrNotExist) {
 		assert.NoError(t, err)
 	}
 
-	os.RemoveAll(path.Join(rootDir, "gentest"))
+	os.RemoveAll(path.Join("gentest"))
 }
